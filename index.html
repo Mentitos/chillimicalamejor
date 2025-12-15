@@ -3,32 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chillimica Fan Page</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <title>Chillimica Web</title>
+    </head>
 <body>
 
     <div class="card">
-        <h2>✨ Nuevo Video ✨</h2>
-        
-        <div class="video-container">
-            <iframe 
-                id="main-video" 
-                src="" 
-                title="YouTube video player" 
-                frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-            </iframe>
-        </div>
-
-        <div class="video-info">
-            <div id="video-title">Buscando el mejor video...</div>
-            <div id="video-date" class="date"></div>
-        </div>
+        <h2 id="titulo">Cargando...</h2>
+        <iframe id="video-frame" width="560" height="315" src="" frameborder="0" allowfullscreen></iframe>
     </div>
 
-    <script src="script.js"></script>
-
+    <script>
+        // Esta vez el fetch es a TU PROPIO archivo, súper rápido
+        fetch('video_data.json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('titulo').innerText = data.title;
+                document.getElementById('video-frame').src = `https://www.youtube.com/embed/${data.id}`;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                // Aquí puedes poner tu video de respaldo manual si falla el JSON
+            });
+    </script>
 </body>
 </html>

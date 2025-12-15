@@ -1,0 +1,36 @@
+name: Actualizar Video Youtube
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Se ejecuta cada hora en punto
+  workflow_dispatch: # Permite que lo ejecutes manualmente con un click si quieres
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permiso para guardar el archivo JSON
+    
+    steps:
+      - name: Bajar código del repo
+        uses: actions/checkout@v3
+
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar librería requests
+        run: pip install requests
+
+      - name: Correr el script buscador
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python obtener_video.py
+
+      - name: Guardar cambios en el repo
+        run: |
+          git config --global user.name 'UpdateBot'
+          git config --global user.email 'bot@noreply.github.com'
+          git add video_data.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Actualizar ultimo video" && git push)

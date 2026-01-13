@@ -12,11 +12,15 @@ async function init() {
 
         // 1. Update Avatar
         const avatarImg = document.getElementById('hero-avatar');
+        // Add error handler fallback
+        if (avatarImg) {
+            avatarImg.onerror = function () {
+                this.src = "https://yt3.googleusercontent.com/ytc/AIdro_nFv3gqVvXb8LQaWf8J-wFv0Jz8xJ7xJ7xJ7xJ7=s160-c-k-c0x00ffffff-no-rj";
+            };
+        }
+
         if (data.feed && data.feed.image) {
             if (avatarImg) avatarImg.src = data.feed.image;
-        } else {
-            // Fallback hardcoded avatar just in case
-            if (avatarImg) avatarImg.src = "https://yt3.googleusercontent.com/ytc/AIdro_nFv3gqVvXb8LQaWf8J-wFv0Jz8xJ7xJ7xJ7xJ7=s160-c-k-c0x00ffffff-no-rj";
         }
 
         // 2. Render Videos

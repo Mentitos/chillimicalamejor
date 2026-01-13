@@ -15,7 +15,7 @@ async function init() {
         // Add error handler fallback
         if (avatarImg) {
             avatarImg.onerror = function () {
-                this.src = "https://yt3.googleusercontent.com/ytc/AIdro_nFv3gqVvXb8LQaWf8J-wFv0Jz8xJ7xJ7xJ7xJ7=s160-c-k-c0x00ffffff-no-rj";
+                this.src = "https://yt3.googleusercontent.com/DYwV33MwJeellbSB0bqFYLlNjFI4ZUYAnbp780GLztlcNOterlv9vV5U67Ml920ko_dtUqpywA";
             };
         }
 

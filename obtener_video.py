@@ -19,7 +19,24 @@ def parse_duration(duration_str):
     
     return (hours * 3600) + (minutes * 60) + seconds
 
+def obtener_avatar():
+    """Obtiene la URL del avatar de alta calidad del canal"""
+    url_channel = f"https://www.googleapis.com/youtube/v3/channels?part=snippet&id={CHANNEL_ID}&key={API_KEY}"
+    try:
+        resp = requests.get(url_channel)
+        data = resp.json()
+        if "items" in data and len(data["items"]) > 0:
+            return data["items"][0]["snippet"]["thumbnails"]["high"]["url"]
+    except Exception as e:
+        print(f"⚠️ Error obteniendo avatar: {e}")
+    return None
+
 def buscar_video_real():
+    # PASO 0: Obtener Avatar del canal
+    avatar_url = obtener_avatar()
+    if avatar_url:
+        print(f"🖼️  Avatar encontrado: {avatar_url}")
+
     # PASO 1: Obtener la lista de subidas del canal
     # Truco: Cambiamos "UC" (Canal) por "UU" (Uploads Playlist) para ahorrar cuota
     uploads_id = CHANNEL_ID.replace("UC", "UU", 1)
@@ -68,7 +85,8 @@ def buscar_video_real():
             "id": item["id"],
             "title": titulo,
             "thumbnail": item["snippet"]["thumbnails"]["high"]["url"],
-            "date": item["snippet"]["publishedAt"]
+            "date": item["snippet"]["publishedAt"],
+            "channel_avatar": avatar_url # Agregamos el avatar aqui
         }
         break # Ya encontramos el más reciente, dejamos de buscar
 
@@ -77,6 +95,8 @@ def buscar_video_real():
         with open("video_data.json", "w") as f:
             json.dump(video_final, f)
         print(f"✅ EXITO: Guardado video: {video_final['title']}")
+        if avatar_url:
+             print(f"✅ EXITO: Guardado avatar en el JSON")
     else:
         print("⚠️ No se encontraron videos editados recientes (todo eran lives o shorts).")
 

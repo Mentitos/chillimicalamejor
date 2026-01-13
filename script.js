@@ -1,60 +1,116 @@
 const channelID = 'UCboXCsBUZvek5T5cCltHS5w';
-const backupVideoId = 'ti2DIoIAjHQ';
-const backupTitle = 'ADescentrar las relaciones (Video Destacado)';
-
 const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelID}`;
 const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
 
-document.addEventListener('DOMContentLoaded', cargarVideoReciente);
+document.addEventListener('DOMContentLoaded', init);
 
-async function cargarVideoReciente() {
+async function init() {
     try {
         const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
 
-        let videoElegido = null;
-
-        // Si hay al menos dos videos, muestra el segundo más reciente.
-        if (data.items && data.items.length > 1) {
-            videoElegido = data.items[1]; // El segundo video de la lista
-        } 
-        // Si solo hay uno, muestra ese.
-        else if (data.items && data.items.length > 0) {
-            console.log("Solo se encontró un video, mostrando el más reciente.");
-            videoElegido = data.items[0]; 
+        // 1. Update Avatar
+        if (data.feed && data.feed.image) {
+            const avatarImg = document.getElementById('hero-avatar');
+            if (avatarImg) {
+                avatarImg.src = data.feed.image;
+            }
         }
 
-        if (videoElegido) {
-            const videoId = videoElegido.link.split('v=')[1];
-            mostrarVideo(videoId, videoElegido.title, videoElegido.pubDate);
+        // 2. Render Videos
+        const videoGrid = document.getElementById('video-grid');
+        if (data.items && data.items.length > 0) {
+            videoGrid.innerHTML = ''; // Clear loading state
+
+            // Take up to 3 videos
+            const videosToShow = data.items.slice(0, 3);
+
+            videosToShow.forEach(video => {
+                const card = createVideoCard(video);
+                videoGrid.appendChild(card);
+            });
         } else {
-            throw new Error("No se encontraron videos en el feed.");
+            videoGrid.innerHTML = '<p>No se encontraron videos recientes.</p>';
         }
+
     } catch (error) {
-        console.error("Error cargando el feed de videos:", error);
-        mostrarVideo(backupVideoId, backupTitle, "");
+        console.error("Error fetching data:", error);
+        loadBackupContent();
     }
 }
 
-function mostrarVideo(id, titulo, fecha) {
-    const videoFrame = document.getElementById('main-video');
-    const titleElement = document.getElementById('video-title');
-    const dateElement = document.getElementById('video-date');
+function createVideoCard(video) {
+    const videoId = video.link ? video.link.split('v=')[1] : video.id; // Handle both RSS and JSON formats
+    const title = video.title;
+    const dateStr = new Date(video.pubDate || video.date).toLocaleDateString('es-ES', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
 
-    if (videoFrame) {
-        videoFrame.src = `https://www.youtube.com/embed/${id}`;
-    }
-    if (titleElement) {
-        titleElement.innerText = titulo;
-    }
-    if (dateElement) {
-        if (fecha) {
-            const dateObj = new Date(fecha);
-            dateElement.innerText = dateObj.toLocaleDateString('es-ES', { 
-                year: 'numeric', month: 'long', day: 'numeric' 
-            });
-        } else {
-            dateElement.innerText = '';
+    const card = document.createElement('div');
+    card.className = 'video-card';
+
+    card.innerHTML = `
+        <div class="video-thumbnail-container">
+            <iframe 
+                src="https://www.youtube.com/embed/${videoId}" 
+                title="${title}" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        <div class="video-info">
+            <h3>${title}</h3>
+            <div class="video-date">${dateStr}</div>
+        </div>
+    `;
+    return card;
+}
+
+async function loadBackupContent() {
+    console.log("Intentando cargar desde video_data.json...");
+    try {
+        const response = await fetch('video_data.json');
+        if (!response.ok) throw new Error("No se pudo cargar video_data.json");
+
+        const localData = await response.json();
+
+        // 1. Update Avatar from local JSON
+        if (localData.channel_avatar) {
+            const avatarImg = document.getElementById('hero-avatar');
+            if (avatarImg) avatarImg.src = localData.channel_avatar;
         }
+
+        // 2. Render Video from local JSON
+        const videoGrid = document.getElementById('video-grid');
+        videoGrid.innerHTML = '';
+
+        // Adapt format to match what createVideoCard expects
+        // video_data.json is a single object, createVideoCard can handle it with slight modification above
+        const card = createVideoCard(localData);
+        videoGrid.appendChild(card);
+
+    } catch (e) {
+        console.warn("Fallo carga local, usando backup estático.", e);
+        // Fallback total
+        const videoGrid = document.getElementById('video-grid');
+        videoGrid.innerHTML = `
+            <div class="video-card">
+                 <div class="video-thumbnail-container">
+                    <iframe 
+                        src="https://www.youtube.com/embed/ti2DIoIAjHQ" 
+                        title="Video Destacado" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="video-info">
+                    <h3>Descentrar las relaciones (Video Destacado)</h3>
+                    <div class="video-date">Backup Video</div>
+                </div>
+            </div>
+        `;
     }
 }

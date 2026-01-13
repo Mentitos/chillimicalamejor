@@ -11,11 +11,12 @@ async function init() {
         const data = await response.json();
 
         // 1. Update Avatar
+        const avatarImg = document.getElementById('hero-avatar');
         if (data.feed && data.feed.image) {
-            const avatarImg = document.getElementById('hero-avatar');
-            if (avatarImg) {
-                avatarImg.src = data.feed.image;
-            }
+            if (avatarImg) avatarImg.src = data.feed.image;
+        } else {
+            // Fallback hardcoded avatar just in case
+            if (avatarImg) avatarImg.src = "https://yt3.googleusercontent.com/ytc/AIdro_nFv3gqVvXb8LQaWf8J-wFv0Jz8xJ7xJ7xJ7xJ7=s160-c-k-c0x00ffffff-no-rj";
         }
 
         // 2. Render Videos

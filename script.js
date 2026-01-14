@@ -28,8 +28,8 @@ async function init() {
         if (data.items && data.items.length > 0) {
             videoGrid.innerHTML = ''; // Clear loading state
 
-            // Take up to 3 videos
-            const videosToShow = data.items.slice(0, 3);
+            // Take up to 4 videos
+            const videosToShow = data.items.slice(0, 4);
 
             videosToShow.forEach(video => {
                 const card = createVideoCard(video);
@@ -42,6 +42,34 @@ async function init() {
     } catch (error) {
         console.error("Error fetching data:", error);
         loadBackupContent();
+    }
+
+    // Load Fan Arts
+    loadFanArt();
+}
+
+async function loadFanArt() {
+    const galleryGrid = document.querySelector('.fan-art-grid');
+    if (!galleryGrid) return;
+
+    // Use global fanArtData from fanart_data.js
+    if (typeof fanArtData !== 'undefined') {
+        galleryGrid.innerHTML = ''; // Clear placeholders
+
+        fanArtData.forEach(art => {
+            const card = document.createElement('div');
+            card.className = 'art-card';
+            card.innerHTML = `
+                <a href="${art.link}" target="_blank">
+                    <img src="${art.image}" alt="Fan Art de ${art.artist}" loading="lazy">
+                    <div class="art-caption">${art.artist}</div>
+                </a>
+            `;
+            galleryGrid.appendChild(card);
+        });
+    } else {
+        console.warn("No se encontraron fan arts (fanArtData undefined).");
+        galleryGrid.innerHTML = '<p>No se pudo cargar la galería.</p>';
     }
 }
 
